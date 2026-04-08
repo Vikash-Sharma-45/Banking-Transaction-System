@@ -11,10 +11,10 @@ app.use(express.json())
 app.use(cookieParser())
 
 /**
- * - Use Routes
+ * - Routes Required
  */
 const authRouter = require("./routes/auth.routes")
-const accountRouter = require("../routes/account.routes")
+const accountRouter = require("./routes/account.routes")
 
 /**
  * - Use Routes

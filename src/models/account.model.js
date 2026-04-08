@@ -1,4 +1,4 @@
-const express = require("expresss")
+const express = require("express")
 const mongoose = require("mongoose")
 
 
@@ -10,12 +10,16 @@ const accountSchema = new mongoose.Schema( {
         index : true
     }, 
     status : {
-        enum : ["Active", "Frozen", "Closed"],
-        message : "Status should be either Active, Frozen or Closed",
-    },
-    currancy : {
         type : String,
-        required : [true, "Currancy is Required for creating an account"],
+        enum : {
+            values : ["Active", "Frozen", "Closed"],
+            message : "Status should be either Active, Frozen or Closed"
+        },
+        default : "Active"
+    },
+    currency : {
+        type : String,
+        required : [true, "Currency is Required for creating an account"],
         default : "INR"
     }
 
