@@ -8,7 +8,7 @@ const ledgerSchema = new mongoose.Schema({
         index : true,
         immutable : true
     },
-    ammount : {
+    amount : {
         type : Number,
         required : [true, "Amount i required for creating a ledger entry"],
         immutable : true
