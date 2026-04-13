@@ -60,31 +60,39 @@ async function createTransaction(req, res) {
     if(isTransactionAllreadyExists) {
 
         if(isTransactionAllreadyExists.status === "Completed") {
-             res.status(200).json({
+            return res.status(200).json({
                 message : "Transaction alrady processed",
                 transaction : isTransactionAllreadyExists
             })
         } 
 
         if(isTransactionAllreadyExists.status === "Pending"){
-             res.status(200).json({
+            return res.status(200).json({
                 message : "Transaction is in processing"
             })
         }
 
         if(isTransactionAllreadyExists.status === "Failed") {
-             res.status(500).json({
+            return res.status(500).json({
                 message : "Transaction is Failed , Please try"
             })
         }
 
         if(isTransactionAllreadyExists.status === "Reversed") {
-            res.status(500).json({
-                message : "Transaction is Reversed, Please retry"
+            return res.status(500).json({
+                message : "Transaction is Reversed,Please retry"
             })
         }
         
     }
 
-    
+    /**
+     * 3. Check Account Status
+     */
+
+    if(fromUserAccount.status !== "ACTIVE" || toUserAccount.status !== "ACTIVE") {
+        return res.status(400).json({
+            message : "Both fromAccount and toAccount should be ACTIVE to process the transaction"
+        })
+    }
 }
