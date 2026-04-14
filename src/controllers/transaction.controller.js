@@ -95,4 +95,16 @@ async function createTransaction(req, res) {
             message : "Both fromAccount and toAccount should be ACTIVE to process the transaction"
         })
     }
+
+    /**
+     * - 4. Derive sender balance from ledger
+     */
+
+    const balance = await fromUserAccount.getBalance()
+
+    if(balance < amount) {
+        return res.status(400).json({
+            message: `Insufficient balance. Current balance is ${balance}. Required balance is ${amount}`
+        })
+    }
 }
