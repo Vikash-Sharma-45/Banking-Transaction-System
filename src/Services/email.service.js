@@ -56,6 +56,16 @@ async function sendTransactionEmail(userEmail, name, amount, toAccount) {
   await sendEmail(userEmail, subject, text, html);
 }
 
+async function sendTransactionFailureEmail(userEmail, name, amount, toAccount) {
+  const subject = `Transaction Failed: $${amount} transfer to account ${toAccount}`;
+  const text = `Hi ${name},\n\nWe regret to inform you that your attempt to transfer $${amount} to account ${toAccount} has failed. Please check your account balance and try again. If you continue to experience issues, please contact our support team.\n\nBest regards,\nBanking Transaction System Team`;
+  const html = `<p>Hi ${name},</p><p>We regret to inform you that your attempt to transfer <b>$${amount}</b> to account <b>${toAccount}</b> has failed. Please check your account balance and try again. If you continue to experience issues, please contact our support team.</p><p>Best regards,<br/>Banking Transaction System Team</p>`;
+  
+  await sendEmail(userEmail, subject, text, html);
+}
+
 module.exports = {
-    sendRegistrationEmail
+    sendRegistrationEmail,
+    sendTransactionEmail,
+    sendTransactionFailureEmail
 };
