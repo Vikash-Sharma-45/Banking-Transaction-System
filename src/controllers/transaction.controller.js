@@ -2,7 +2,8 @@ const transationRoutes = require('../routes/transaction.routes');
 const transactionModel = require('../models/transaction.model')
 const ledgerModel = require('../models/ledger.model')
 const accountModel = require('../models/account.model')
-const emaolService = require('../Services/email.service')
+const emailService = require('../Services/email.service')
+const mongoose = require('mongoose')
 
 /**
  * - Create a new transaction
@@ -107,4 +108,55 @@ async function createTransaction(req, res) {
             message: `Insufficient balance. Current balance is ${balance}. Required balance is ${amount}`
         })
     }
+
+    /**
+     * - 5. Create Transaction (Pending)
+     */
+
+    const session = await transactionModel.startSession()
+    session.startTransaction()
+
+    const transaction = await transactionModel.create({
+        fromAccount,
+        toAccount,
+        amount,
+        idempotencyKey,
+        status : "Pending"
+    }, {session})
+
+    const debtLedgerEntry = await ledgerModel.create({
+        account : fromAccount,
+        amount : amount,
+        transaction : transaction._id,
+        type : "Debt",
+        
+    }, {session})
+
+    const creditLedgerEntry = await ledgerModel.create({
+        account : toAccount,
+        amount : amount,
+        transaction : transaction._id,
+        type : "Credit",
+
+    }, {session})
+
+    transaction.status = "Completed"
+    transaction.save()
+
+    await session.commitTransaction()
+    session.endSession()
+
+    /**
+     * - 10. Send Email Notification
+     */
+
+    emailService.sendTransactionEmail(req.user.email, req.user.name, amount, toAccount)
+    return res.status(201).json({
+        message : "Transaction Completed Successfully",
+        transaction : transaction
+    })
+}
+
+module.exports = {
+    createTransaction
 }

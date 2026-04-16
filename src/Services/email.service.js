@@ -48,6 +48,14 @@ async function sendRegistrationEmail(userEmail, name) {
     await sendEmail(userEmail, subject, text, html); 
 }
 
+async function sendTransactionEmail(userEmail, name, amount, toAccount) {
+  const subject = `Transaction Alert: $${amount} transferred to account ${toAccount}`;
+  const text = `Hi ${name},\n\nYou have successfully transferred $${amount} to account ${toAccount}. If you did not authorize this transaction, please contact our support team immediately.\n\nBest regards,\nBanking Transaction System Team`;
+  const html = `<p>Hi ${name},</p><p>You have successfully transferred <b>$${amount}</b> to account <b>${toAccount}</b>. If you did not authorize this transaction, please contact our support team immediately.</p><p>Best regards,<br/>Banking Transaction System Team</p>`;
+  
+  await sendEmail(userEmail, subject, text, html);
+}
+
 module.exports = {
     sendRegistrationEmail
 };
