@@ -60,26 +60,26 @@ async function createTransaction(req, res) {
 
     if(isTransactionAllreadyExists) {
 
-        if(isTransactionAllreadyExists.status === "Completed") {
+        if(isTransactionAllreadyExists.status === "COMPLETED") {
             return res.status(200).json({
                 message : "Transaction alrady processed",
                 transaction : isTransactionAllreadyExists
             })
         } 
 
-        if(isTransactionAllreadyExists.status === "Pending"){
+        if(isTransactionAllreadyExists.status === "PENDING"){
             return res.status(200).json({
                 message : "Transaction is in processing"
             })
         }
 
-        if(isTransactionAllreadyExists.status === "Failed") {
+        if(isTransactionAllreadyExists.status === "FAILED") {
             return res.status(500).json({
                 message : "Transaction is Failed , Please try"
             })
         }
 
-        if(isTransactionAllreadyExists.status === "Reversed") {
+        if(isTransactionAllreadyExists.status === "REVERSED") {
             return res.status(500).json({
                 message : "Transaction is Reversed,Please retry"
             })
@@ -121,14 +121,14 @@ async function createTransaction(req, res) {
         toAccount,
         amount,
         idempotencyKey,
-        status : "Pending"
+        status : "PENDING"
     }, {session})
 
     const debitLedgerEntry = await ledgerModel.create({
         account : fromAccount,
         amount : amount,
         transaction : transaction._id,
-        type : "Debt",
+        type : "DEBIT",
         
     }, {session})
 
@@ -136,12 +136,12 @@ async function createTransaction(req, res) {
         account : toAccount,
         amount : amount,
         transaction : transaction._id,
-        type : "Credit",
+        type : "CREDIT",
 
     }, {session})
 
-    transaction.status = "Completed"
-    transaction.save()
+    transaction.status = "COMPLETED"
+    await transaction.save()
 
     await session.commitTransaction()
     session.endSession()
@@ -168,7 +168,7 @@ async function createInitialFundsTransaction(req, res) {
 
     } 
 
-    const toUserAccount = await accountModel.findById ({
+    const toUserAccount = await accountModel.findOne ({
         _id : toAccount
     })
 
@@ -179,7 +179,7 @@ async function createInitialFundsTransaction(req, res) {
     }
 
     const fromUserAccount = await accountModel.findOne({
-        
+        // systemUser : true,
         user : req.user._id
     })
 
@@ -192,12 +192,12 @@ async function createInitialFundsTransaction(req, res) {
     const session = await mongoose.startSession()
     session.startTransaction()
 
-    const transaction = new transactionModel.create({
+    const transaction = new transactionModel({
         fromAccount : fromUserAccount._id,
         toAccount,
         amount,
-        idenpotencyKey,
-        status : "Pending"
+        idempotencyKey,
+        status : "PENDING"
     
     })
 
@@ -205,14 +205,14 @@ async function createInitialFundsTransaction(req, res) {
         account : fromUserAccount._id,
         amount : amount,
         transaction : transaction._id,
-        type : "Debit"
+        type : "DEBIT"
     }], {session})
 
     const creditLedgerEntry = await ledgerModel.create([{
         account : toUserAccount._id,
         amount : amount,
         transaction : transaction._id,
-        type : "Credit"
+        type : "CREDIT"
     }], {session})
 
     transaction.status = "COMPLETED"

@@ -23,10 +23,10 @@ const ledgerSchema = new mongoose.Schema({
     type : {
         type : String,
         enum : {
-            values : ["Credit", "Debit"],
-            message : "Ledger entry type should be either Credit or Debit"
+            values : ["CREDIT", "DEBIT"],
+            message : "Ledger entry type should be either CREDIT or DEBIT"
         },
-        required : [true, "Ledger entry type is required"],
+        required : [true, "Ledger type is required"],
         immutable : true
     }
     
@@ -34,7 +34,7 @@ const ledgerSchema = new mongoose.Schema({
 
 
 function preventLedgerModification() {
-    throw new Error("Ledger entries cannot be modified once created")
+    throw new Error("Ledger entries are immutable andcannot be modified once deleted")
 }
 
 
