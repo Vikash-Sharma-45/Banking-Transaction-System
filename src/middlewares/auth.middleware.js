@@ -40,9 +40,9 @@ async function authSystemUserMiddleware(req, res, next) {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY)
 
-        const user = await userModel.findById(decoded.userId).select("+systemUser")
+        const user = await userModel.findById(decoded.userId).select("+systemUser +password name email systemUser")
 
-        if(!user.systemUser) {
+        if(!user) {
             return res.status(403).json({
                 message: "Forbidden access, not a system user"
             })
