@@ -17,6 +17,10 @@ const authRouter = require("./routes/auth.routes")
 const accountRouter = require("./routes/account.routes")
 const transactionRoutes = require("./routes/transaction.routes")
 
+
+app.get("/", (req, res) => {
+    res.send("Banking Transaction System API is running")
+})
 /**
  * - Use Routes
  */
