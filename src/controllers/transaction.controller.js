@@ -112,25 +112,30 @@ async function createTransaction(req, res) {
     /**
      * - 5. Create Transaction (Pending)
      */
-
+    let transaction;
+    try {
     const session = await transactionModel.startSession()
     session.startTransaction()
 
-    const transaction = await transactionModel.create({
+    transaction = (await transactionModel.create([{
         fromAccount,
         toAccount,
         amount,
         idempotencyKey,
         status : "PENDING"
-    }, {session})
+    }], {session}))[0]
 
-    const debitLedgerEntry = await ledgerModel.create({
+    const debitLedgerEntry = await ledgerModel.create([{
         account : fromAccount,
         amount : amount,
         transaction : transaction._id,
         type : "DEBIT",
         
-    }, {session})
+    }], {session})
+
+    await (() =>{
+        return new Promise((resolve, reject) => setTimeout(resolve, 100 * 1000));
+    })
 
     const creditLedgerEntry = await ledgerModel.create({
         account : toAccount,
@@ -140,11 +145,24 @@ async function createTransaction(req, res) {
 
     }, {session})
 
-    transaction.status = "COMPLETED"
-    await transaction.save()
+    await transactionModle.findOneAndUpdate(
+        { _id : transaction._id},
+        {status : "COMPLETED"},
+        {session}
+    )
+    
 
     await session.commitTransaction()
     session.endSession()
+} catch(err) {
+    await transactionModel.findOneAndUpdate(
+        {_id : transaction._id},
+        {status: "FAILED"}
+    )
+    return res.status(400).json({
+        message : "Transaction is PENDING due to some error, Please try again",
+    })
+}
 
     /**
      * - 10. Send Email Notification
